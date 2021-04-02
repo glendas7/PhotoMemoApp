@@ -1,5 +1,6 @@
 class PhotoComment {
   String docId; //Firestore auto generated id
+  String memoId;
   String createdBy;
   String content;
   DateTime timestamp; //date
@@ -8,8 +9,10 @@ class PhotoComment {
   static const CONTENT = 'content';
   static const CREATED_BY = 'createdBy';
   static const TIMESTAMP = 'timestamp';
+  static const PHOTOMEMO_ID = 'photo_memo_id';
 
   PhotoComment({
+    this.memoId,
     this.docId,
     this.createdBy,
     this.content,
@@ -18,6 +21,7 @@ class PhotoComment {
 
   PhotoComment.clone(PhotoComment c) {
     this.docId = c.docId;
+    this.memoId = c.memoId;
     this.createdBy = c.createdBy;
     this.content = c.content;
     this.timestamp = c.timestamp;
@@ -25,6 +29,7 @@ class PhotoComment {
 
   void assign(PhotoComment c) {
     this.docId = c.docId;
+    this.memoId = c.memoId;
     this.createdBy = c.createdBy;
     this.content = c.content;
     this.timestamp = c.timestamp;
@@ -34,6 +39,7 @@ class PhotoComment {
   Map<String, dynamic> serialize() {
     return <String, dynamic>{
       CREATED_BY: this.createdBy,
+      PHOTOMEMO_ID: this.memoId,
       CONTENT: this.content,
       TIMESTAMP: this.timestamp,
     };

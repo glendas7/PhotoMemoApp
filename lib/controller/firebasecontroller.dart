@@ -35,11 +35,10 @@ class FirebaseController {
     return ref.id;
   }
 
-  static Future<String> addPhotoComment(
-      PhotoMemo photoMemo, PhotoComment photoComment) async {
+  static Future<String> addPhotoComment(PhotoComment comment) async {
     var ref = await FirebaseFirestore.instance
         .collection(Constant.PHOTOMEMO_COMMENT)
-        .add(photoMemo.serialize());
+        .add(comment.serialize());
     return ref.id;
   }
 
@@ -55,6 +54,23 @@ class FirebaseController {
     querySnapshot.docs.forEach(
       (doc) {
         result.add(PhotoMemo.deserialize(doc.data(), doc.id));
+      },
+    );
+    return result;
+  }
+
+  static Future<List<PhotoComment>> getPhotoCommentList(
+      {@required String memo}) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.PHOTOMEMO_COMMENT)
+        .where(PhotoComment.PHOTOMEMO_ID, isEqualTo: memo)
+        .orderBy(PhotoMemo.TIMESTAMP, descending: true)
+        .get();
+
+    var result = <PhotoComment>[];
+    querySnapshot.docs.forEach(
+      (doc) {
+        result.add(PhotoComment.deserialize(doc.data(), doc.id));
       },
     );
     return result;
