@@ -3,13 +3,15 @@ class PhotoComment {
   String memoId;
   String createdBy;
   String content;
-  DateTime timestamp; //date
+  DateTime timestamp;
+  String originalPoster; //date
 
 //key for firestore documents
   static const CONTENT = 'content';
   static const CREATED_BY = 'createdBy';
   static const TIMESTAMP = 'timestamp';
   static const PHOTOMEMO_ID = 'photo_memo_id';
+  static const ORIGINAL_POSTER = 'originalPoster';
 
   PhotoComment({
     this.memoId,
@@ -17,6 +19,7 @@ class PhotoComment {
     this.createdBy,
     this.content,
     this.timestamp,
+    this.originalPoster,
   });
 
   PhotoComment.clone(PhotoComment c) {
@@ -25,6 +28,7 @@ class PhotoComment {
     this.createdBy = c.createdBy;
     this.content = c.content;
     this.timestamp = c.timestamp;
+    this.originalPoster = c.originalPoster;
   }
 
   void assign(PhotoComment c) {
@@ -33,6 +37,7 @@ class PhotoComment {
     this.createdBy = c.createdBy;
     this.content = c.content;
     this.timestamp = c.timestamp;
+    this.originalPoster = c.originalPoster;
   }
 
 //from dart to firestore document compatable
@@ -42,6 +47,7 @@ class PhotoComment {
       PHOTOMEMO_ID: this.memoId,
       CONTENT: this.content,
       TIMESTAMP: this.timestamp,
+      ORIGINAL_POSTER: this.originalPoster,
     };
   }
 
@@ -49,6 +55,7 @@ class PhotoComment {
     return PhotoComment(
       docId: docId,
       createdBy: doc[CREATED_BY],
+      originalPoster: doc[ORIGINAL_POSTER],
       content: doc[CONTENT],
       timestamp: doc[TIMESTAMP] == null
           ? null

@@ -1,5 +1,7 @@
 import 'package:L3P1/controller/firebasecontroller.dart';
+import 'package:L3P1/model/profile.dart';
 import 'package:L3P1/screen/myview/mydialog.dart';
+import 'package:L3P1/screen/signin_screen.dart';
 import 'package:flutter/material.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -96,6 +98,7 @@ class _Controller {
   String password;
   String passwordConfirm;
   String passwordErrorMessage;
+  Profile tempProfile = Profile();
 
   void createAccount() async {
     if (!state.formKey.currentState.validate()) return;
@@ -107,11 +110,18 @@ class _Controller {
       return;
     }
 
+    tempProfile.signUpDate = DateTime.now();
+    tempProfile.name = "";
+    tempProfile.email = email;
+    tempProfile.description = "";
+
     try {
       await FirebaseController.createAccount(email: email, password: password);
+      await FirebaseController.createProfile(tempProfile);
+      Navigator.pushNamed(state.context, SignInScreen.routeName);
       MyDialog.info(
           context: state.context,
-          title: 'Account Created: ',
+          title: 'Account Created! ',
           content: 'Go to Sign In to use the app!');
     } catch (e) {
       MyDialog.info(

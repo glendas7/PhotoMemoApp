@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:L3P1/controller/firebasecontroller.dart';
 import 'package:L3P1/model/constant.dart';
+import 'package:L3P1/model/photocomment.dart';
 import 'package:L3P1/model/photomemo.dart';
 import 'package:L3P1/screen/myview/mydialog.dart';
 import 'package:L3P1/screen/myview/myimage.dart';
@@ -22,6 +23,7 @@ class _DetailedViewState extends State<DetailedViewScreen> {
   User user;
   PhotoMemo onePhotoMemoOriginal;
   PhotoMemo onePhotoMemoTemp;
+  List<PhotoComment> photoCommentList;
   bool editMode = false;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   String progressMessage;
@@ -38,6 +40,7 @@ class _DetailedViewState extends State<DetailedViewScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
+    photoCommentList ??= args[Constant.ARG_PHOTOCOMMENTLIST];
     onePhotoMemoOriginal ??= args[Constant.ARG_ONE_PHOTOMEMO];
     onePhotoMemoTemp ??= PhotoMemo.clone(onePhotoMemoOriginal);
 
@@ -161,6 +164,69 @@ class _DetailedViewState extends State<DetailedViewScreen> {
                   ? Text(onePhotoMemoTemp.imageLabels.join('|'))
                   : SizedBox(
                       height: 1.0,
+                    ),
+              SizedBox(
+                height: 5.0,
+              ),
+              Container(
+                color: Colors.purpleAccent,
+                child: Row(
+                  children: [
+                    Text(
+                      '   COMMENTS',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 60,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 5.0,
+              ),
+              photoCommentList.length == 0
+                  ? Text('No Comments Found',
+                      style: Theme.of(context).textTheme.headline5)
+                  : ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
+                      itemCount: photoCommentList.length,
+                      itemBuilder: (BuildContext context, int index) =>
+                          Container(
+                        color: index == 0 || index % 2 == 0
+                            ? Colors.purple[200]
+                            : Colors.indigo[200],
+                        child: ListTile(
+                          title: Text(photoCommentList[index].createdBy,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                color: Colors.black,
+                              )),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Created On: ${photoCommentList[index].timestamp}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              Text(
+                                photoCommentList[index].content,
+                                style: TextStyle(
+                                  fontSize: 35,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.indigo[900],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
             ],
           ),

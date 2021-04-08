@@ -6,6 +6,7 @@ import 'package:L3P1/screen/sharedwith_screen.dart';
 import 'package:L3P1/screen/signin_screen.dart';
 import 'package:L3P1/screen/signup_screen.dart';
 import 'package:L3P1/screen/userhome_screen.dart';
+import 'package:L3P1/screen/view_allprofiles.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -33,6 +34,7 @@ class PhotoMemoApp extends StatelessWidget {
         SignUpScreen.routeName: (context) => SignUpScreen(),
         SharedWithScreen.routeName: (context) => SharedWithScreen(),
         PostScreen.routeName: (context) => PostScreen(),
+        ViewAllProfileScreen.routeName: (context) => ViewAllProfileScreen(),
       },
     );
   }

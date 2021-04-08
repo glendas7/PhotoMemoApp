@@ -1,11 +1,14 @@
 import 'package:L3P1/controller/firebasecontroller.dart';
 import 'package:L3P1/model/constant.dart';
+import 'package:L3P1/model/photocomment.dart';
 import 'package:L3P1/model/photomemo.dart';
+import 'package:L3P1/model/profile.dart';
 import 'package:L3P1/screen/addphotomemo_screen.dart';
 import 'package:L3P1/screen/detailedview_screen.dart';
 import 'package:L3P1/screen/myview/mydialog.dart';
 import 'package:L3P1/screen/myview/myimage.dart';
 import 'package:L3P1/screen/sharedwith_screen.dart';
+import 'package:L3P1/screen/view_allprofiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +23,9 @@ class UserHomeScreen extends StatefulWidget {
 class _UserHomeState extends State<UserHomeScreen> {
   _Controller con;
   User user;
+  int index = 0;
   List<PhotoMemo> photoMemoList;
+
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   @override
   void initState() {
@@ -85,6 +90,11 @@ class _UserHomeState extends State<UserHomeScreen> {
                 onTap: con.sharedWithMe,
               ),
               ListTile(
+                leading: Icon(Icons.emoji_people),
+                title: Text('View Users'),
+                onTap: con.viewAllProfiles,
+              ),
+              ListTile(
                 leading: Icon(Icons.settings),
                 title: Text('Settings'),
                 onTap: null, //con.settings
@@ -106,7 +116,7 @@ class _UserHomeState extends State<UserHomeScreen> {
                 style: Theme.of(context).textTheme.headline5)
             : ListView.builder(
                 itemCount: photoMemoList.length,
-                itemBuilder: (BuildContext context, int index) => Container(
+                itemBuilder: (BuildContext context, index) => Container(
                   color: con.delIndex != null && con.delIndex == index
                       ? Theme.of(context).highlightColor
                       : Theme.of(context).scaffoldBackgroundColor,
@@ -139,6 +149,8 @@ class _UserHomeState extends State<UserHomeScreen> {
 class _Controller {
   _UserHomeState state;
   _Controller(this.state);
+  List<PhotoComment> photoCommentList;
+  List<Profile> profileList;
   int delIndex;
   String keyString;
 
@@ -163,11 +175,23 @@ class _Controller {
   }
 
   void onTap(int index) async {
+    try {
+      photoCommentList = await FirebaseController.getPhotoCommentList(
+          originalPoster: state.photoMemoList[index].createdBy,
+          memoId: state.photoMemoList[index].docId);
+    } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+      MyDialog.info(
+          context: state.context,
+          title: 'getPhotoCommentList error',
+          content: '$e');
+    }
     if (delIndex != null) return;
     await Navigator.pushNamed(state.context, DetailedViewScreen.routeName,
         arguments: {
           Constant.ARG_USER: state.user,
           Constant.ARG_ONE_PHOTOMEMO: state.photoMemoList[index],
+          Constant.ARG_PHOTOCOMMENTLIST: photoCommentList,
         });
     state.render(() {});
   }
@@ -181,7 +205,8 @@ class _Controller {
       await Navigator.pushNamed(state.context, SharedWithScreen.routeName,
           arguments: {
             Constant.ARG_USER: state.user,
-            Constant.ARG_PHOTOMEMOLIST: photoMemoList
+            Constant.ARG_PHOTOMEMOLIST: photoMemoList,
+            Constant.ARG_PHOTOCOMMENTLIST: photoCommentList,
           });
       Navigator.pop(state.context); //closes drawer
     } catch (e) {
@@ -190,6 +215,21 @@ class _Controller {
         title: 'get Shared PhotoMemo error',
         content: '$e',
       );
+    }
+  }
+
+  void viewAllProfiles() async {
+    try {
+      profileList = await FirebaseController.getProfileList();
+      await Navigator.pushNamed(state.context, ViewAllProfileScreen.routeName,
+          arguments: {
+            Constant.ARG_PROFILELIST: profileList,
+          });
+      Navigator.pop(state.context); //closes drawer
+    } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+      MyDialog.info(
+          context: state.context, title: 'getProfileList error', content: '$e');
     }
   }
 

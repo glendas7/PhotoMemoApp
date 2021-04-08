@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:L3P1/model/constant.dart';
 import 'package:L3P1/model/photocomment.dart';
+import 'package:L3P1/model/photolike.dart';
 import 'package:L3P1/model/photomemo.dart';
+import 'package:L3P1/model/profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
@@ -28,6 +30,28 @@ class FirebaseController {
     await FirebaseAuth.instance.signOut();
   }
 
+  static Future<void> createProfile(Profile profile) async {
+    var ref = await FirebaseFirestore.instance
+        .collection(Constant.PROFILE)
+        .add(profile.serialize());
+    return ref.id;
+  }
+
+  static Future<List<Profile>> getProfileList() async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.PROFILE)
+        .orderBy(Profile.USER_EMAIL, descending: true)
+        .get();
+
+    var result = <Profile>[];
+    querySnapshot.docs.forEach(
+      (doc) {
+        result.add(Profile.deserialize(doc.data(), doc.id));
+      },
+    );
+    return result;
+  }
+
   static Future<String> addPhotoMemo(PhotoMemo photoMemo) async {
     var ref = await FirebaseFirestore.instance
         .collection(Constant.PHOTOMEMO_COLLECTION)
@@ -39,6 +63,13 @@ class FirebaseController {
     var ref = await FirebaseFirestore.instance
         .collection(Constant.PHOTOMEMO_COMMENT)
         .add(comment.serialize());
+    return ref.id;
+  }
+
+  static Future<String> addPhotoLike(PhotoLike like) async {
+    var ref = await FirebaseFirestore.instance
+        .collection(Constant.PHOTOMEMO_LIKE)
+        .add(like.serialize());
     return ref.id;
   }
 
@@ -60,10 +91,11 @@ class FirebaseController {
   }
 
   static Future<List<PhotoComment>> getPhotoCommentList(
-      {@required String memo}) async {
+      {@required String originalPoster, @required String memoId}) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection(Constant.PHOTOMEMO_COMMENT)
-        .where(PhotoComment.PHOTOMEMO_ID, isEqualTo: memo)
+        .where(PhotoComment.ORIGINAL_POSTER, isEqualTo: originalPoster)
+        .where(PhotoComment.PHOTOMEMO_ID, isEqualTo: memoId)
         .orderBy(PhotoMemo.TIMESTAMP, descending: true)
         .get();
 

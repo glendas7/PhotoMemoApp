@@ -17,6 +17,7 @@ class SharedWithScreen extends StatefulWidget {
 
 class _SharedWithState extends State<SharedWithScreen> {
   User user;
+  bool liked = false;
   List<PhotoMemo> photoMemoList;
   List<PhotoComment> photoCommentList;
   _Controller con;
@@ -28,12 +29,36 @@ class _SharedWithState extends State<SharedWithScreen> {
     con = _Controller(this);
   }
 
+  void getCommentList(int index) async {
+    try {
+      photoCommentList = await FirebaseController.getPhotoCommentList(
+          originalPoster: photoMemoList[index].createdBy,
+          memoId: photoMemoList[index].docId);
+    } catch (e) {
+      MyDialog.circularProgressStop(context);
+      MyDialog.info(
+          context: context, title: 'getPhotoCommentList error', content: '$e');
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailScreen(
+          memo: photoMemoList[index],
+          photoCommentList: photoCommentList,
+          cont: con,
+        ),
+      ),
+    );
+  }
+
   void render(fn) => setState(fn);
 
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
+    // photoLikeList ??= args[Constant.ARG_PHOTOMEMOLIKE];
 
     return Scaffold(
       appBar: AppBar(
@@ -48,15 +73,7 @@ class _SharedWithState extends State<SharedWithScreen> {
               itemCount: photoMemoList.length,
               itemBuilder: (context, index) => GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DetailScreen(
-                        memo: photoMemoList[index],
-                        cont: con,
-                      ),
-                    ),
-                  );
+                  getCommentList(index);
                 },
                 child: Card(
                   elevation: 7.0,
@@ -79,6 +96,10 @@ class _SharedWithState extends State<SharedWithScreen> {
                       Text('Created By: ${photoMemoList[index].createdBy}'),
                       Text('Updated At: ${photoMemoList[index].timestamp}'),
                       Text('Shared With: ${photoMemoList[index].sharedWith}'),
+
+                      // liked == false
+                      //     ? Image.asset('images/grey.png')
+                      //     : Image.asset('images/green.png')
                     ],
                   ),
                 ),
@@ -91,13 +112,18 @@ class _SharedWithState extends State<SharedWithScreen> {
 class DetailScreen extends StatelessWidget {
   final PhotoMemo memo;
   final _Controller cont;
+  final List<PhotoComment> photoCommentList;
 
-  DetailScreen({Key key, @required this.memo, @required this.cont})
+  DetailScreen(
+      {Key key,
+      @required this.memo,
+      @required this.cont,
+      @required this.photoCommentList})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Use the Todo to create the UI.
+    int index = 0;
     return Scaffold(
       appBar: AppBar(
         title: Text(memo.title),
@@ -105,7 +131,7 @@ class DetailScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          cont.addComment(memo.docId);
+          cont.addComment(memo.docId, memo.createdBy);
         },
       ),
       body: SingleChildScrollView(
@@ -133,6 +159,68 @@ class DetailScreen extends StatelessWidget {
                 Text('Created By: ${memo.createdBy}'),
                 Text('Updated At: ${memo.timestamp}'),
                 Text('Shared With: ${memo.sharedWith}'),
+                SizedBox(
+                  height: 30.0,
+                ),
+                Container(
+                  color: Colors.purpleAccent,
+                  child: Row(
+                    children: [
+                      Text(
+                        '        COMMENTS',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 5.0,
+                ),
+                photoCommentList.length == 0
+                    ? Text('No Comments Found',
+                        style: Theme.of(context).textTheme.headline5)
+                    : ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: photoCommentList.length,
+                        itemBuilder: (BuildContext context, index) => Container(
+                          color: index == 0 || index % 2 == 0
+                              ? Colors.purple[200]
+                              : Colors.indigo[200],
+                          child: ListTile(
+                            title: Text(photoCommentList[index].createdBy,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                )),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Created On: ${photoCommentList[index].timestamp}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  photoCommentList[index].content,
+                                  style: TextStyle(
+                                    fontSize: 35,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.indigo[900],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
               ],
             ),
           ),
@@ -147,6 +235,7 @@ class _Controller {
   _Controller(this.state);
 
   String memo;
+  String originalPoster;
   String content;
   String createdBy;
   var timestamp;
@@ -162,6 +251,7 @@ class _Controller {
       state.render(() => state.progMessage = "Uploading Comment!");
 
       tempComment.timestamp = DateTime.now();
+      tempComment.originalPoster = originalPoster;
       tempComment.createdBy = state.user.email;
       tempComment.memoId = memo;
 
@@ -184,8 +274,9 @@ class _Controller {
     tempComment.content = value;
   }
 
-  void addComment(String value) {
+  void addComment(String value, String namevalue) {
     memo = value;
+    originalPoster = namevalue;
 
     showDialog(
         context: state.context,
