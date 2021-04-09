@@ -2,6 +2,7 @@ import 'package:L3P1/controller/firebasecontroller.dart';
 import 'package:L3P1/model/constant.dart';
 import 'package:L3P1/model/photocomment.dart';
 import 'package:L3P1/model/photomemo.dart';
+import 'package:L3P1/model/profile.dart';
 import 'package:L3P1/screen/myview/mydialog.dart';
 import 'package:L3P1/screen/signup_screen.dart';
 import 'package:L3P1/screen/userhome_screen.dart';

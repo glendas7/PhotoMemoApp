@@ -7,6 +7,7 @@ import 'package:L3P1/screen/addphotomemo_screen.dart';
 import 'package:L3P1/screen/detailedview_screen.dart';
 import 'package:L3P1/screen/myview/mydialog.dart';
 import 'package:L3P1/screen/myview/myimage.dart';
+import 'package:L3P1/screen/profile_page.dart';
 import 'package:L3P1/screen/sharedwith_screen.dart';
 import 'package:L3P1/screen/view_allprofiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,6 +41,7 @@ class _UserHomeState extends State<UserHomeScreen> {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
+
     return WillPopScope(
       //android back button disabled
       onWillPop: () => Future.value(false),
@@ -81,8 +83,9 @@ class _UserHomeState extends State<UserHomeScreen> {
               UserAccountsDrawerHeader(
                 currentAccountPicture:
                     Icon(Icons.person, size: 100.0), //profile picture
-                accountName: Text('Not Set'),
+                accountName: null,
                 accountEmail: Text(user.email),
+                onDetailsPressed: () => {con.viewMyProfile(user)},
               ),
               ListTile(
                 leading: Icon(Icons.people),
@@ -172,6 +175,20 @@ class _Controller {
     } catch (e) {}
     Navigator.of(state.context).pop(); //close drawer
     Navigator.of(state.context).pop(); //close drawer
+  }
+
+  void viewMyProfile(User user) async {
+    List<Profile> myProfile =
+        await FirebaseController.getOneProfile(user.email);
+
+    Navigator.pushNamed(
+      state.context,
+      ProfileScreen.routeName,
+      arguments: {
+        Constant.ARG_ONE_PROFILE: myProfile[1],
+      },
+    );
+    state.render(() {});
   }
 
   void onTap(int index) async {

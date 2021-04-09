@@ -52,6 +52,21 @@ class FirebaseController {
     return result;
   }
 
+  static Future<List<Profile>> getOneProfile(String email) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constant.PROFILE)
+        .where(Profile.USER_EMAIL, isEqualTo: email)
+        .get();
+
+    var result = <Profile>[];
+    querySnapshot.docs.forEach(
+      (doc) {
+        result.add(Profile.deserialize(doc.data(), doc.id));
+      },
+    );
+    return result;
+  }
+
   static Future<String> addPhotoMemo(PhotoMemo photoMemo) async {
     var ref = await FirebaseFirestore.instance
         .collection(Constant.PHOTOMEMO_COLLECTION)

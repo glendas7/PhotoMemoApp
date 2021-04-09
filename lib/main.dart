@@ -1,7 +1,7 @@
 import 'package:L3P1/model/constant.dart';
 import 'package:L3P1/screen/addphotomemo_screen.dart';
 import 'package:L3P1/screen/detailedview_screen.dart';
-import 'package:L3P1/screen/post_screen.dart';
+import 'package:L3P1/screen/profile_page.dart';
 import 'package:L3P1/screen/sharedwith_screen.dart';
 import 'package:L3P1/screen/signin_screen.dart';
 import 'package:L3P1/screen/signup_screen.dart';
@@ -33,8 +33,8 @@ class PhotoMemoApp extends StatelessWidget {
         DetailedViewScreen.routeName: (context) => DetailedViewScreen(),
         SignUpScreen.routeName: (context) => SignUpScreen(),
         SharedWithScreen.routeName: (context) => SharedWithScreen(),
-        PostScreen.routeName: (context) => PostScreen(),
         ViewAllProfileScreen.routeName: (context) => ViewAllProfileScreen(),
+        ProfileScreen.routeName: (context) => ProfileScreen(),
       },
     );
   }
