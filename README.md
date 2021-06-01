@@ -2,7 +2,7 @@
 
 Nostalgia: A Photo Memo App
 
--Create an Account!
--Tag Users!
--Post Comments/Likes!
--Update your Profile!
+-Create an Account!<br>
+-Tag Users!<br>
+-Post Comments/Likes!<br>
+-Update your Profile!<br>
